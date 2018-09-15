@@ -6,15 +6,37 @@
 #include "Tupla.h"
 #include "Tabla.h"
 #include "FuncionHash.h"
+#include "Array.h"
 
-typedef unsigned int nat;
+template <class U,class T>
+class NodoHash {
+	typedef Puntero<NodoHash<U,T>> pNodoHash;
+public:
+	U dato1;
+	T dato2;
+	nat cant;
+	pNodoHash sig;
+
+	NodoHash(const U &e1,const T &e2, pNodoHash s, nat c) : dato1(e1), dato2(e2), sig(s), cant(c) {};
+
+	NodoHash<U,T> &operator=(const NodoHash<U,T> &n) {
+		if (this != &n) { dato1 = n.dato1; dato2 = n.dato2; sig = n.sig; cant = n.cant; };
+		return *this;
+	};
+
+	virtual ~NodoHash() {};
+};
 
 template <class C, class V>
 class HashAbierto : public Tabla<C,V>
 {
 public:
+	typedef unsigned int nat;
+	typedef Puntero<NodoHash<C, Array<V>>> pAHash;
+	typedef Array<Puntero<NodoHash<C, Array<V>>>> aHash;
+	typedef Puntero<FuncionHash<C>> pFuncionHash;
 
-	HashAbierto(nat cantidadElementos, Puntero<FuncionHash<C>> fHash, const Comparador<C>& comp);
+	HashAbierto(nat cantidadElementos, pFuncionHash fHash, const Comparador<C>& comp);
 
 	//PRE: T(c) no está definida y la tabla no está llena
 	//POS: Define T(c) = v
@@ -59,6 +81,22 @@ public:
 	// Retorna un nuevo iterador sobre la estructura
 	// Postcondición: El iterador se encuentra reiniciado
 	Iterador<Tabla<C, V>> ObtenerIterador() const;
+
+private:
+	//Funciones auxiliares
+	nat PrimerPrimo(nat n);
+	bool EsPrimo(nat n);
+	bool EstaDefinidaAux(const C& c, const pAHash& h) const;
+	void BorrarAux(const C& c, pAHash& h);
+	const V& ObtenerAux(const C& c, const pAHash& h) const;
+
+	//Atributos
+	nat cubetas;
+	nat cantElementos;
+	float factorDeCarga;
+	aHash hash;
+	pFuncionHash funcionHash;
+	Comparador<C>& comp;
 };
 
 
